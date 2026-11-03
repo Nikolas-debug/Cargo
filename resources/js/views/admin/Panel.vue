@@ -109,7 +109,7 @@ onMounted(() => {
         </div>
 
         <!-- Un solo filtro para todo el tablero -->
-        <div class="ml-auto flex items-center gap-2">
+        <div class="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
             <button
                 v-for="rango in rangos"
                 :key="rango.dias"
@@ -122,8 +122,8 @@ onMounted(() => {
                 {{ rango.texto }}
             </button>
 
-            <input v-model="filtro.desde" type="date" class="campo min-h-9 w-full py-1.5 text-[13px] sm:w-36" @change="filtro.dias = 0">
-            <input v-model="filtro.hasta" type="date" class="campo min-h-9 w-full py-1.5 text-[13px] sm:w-36" @change="filtro.dias = 0">
+            <input v-model="filtro.desde" type="date" class="campo min-h-9 min-w-0 flex-1 py-1.5 text-[13px] sm:w-36 sm:flex-none" @change="filtro.dias = 0">
+            <input v-model="filtro.hasta" type="date" class="campo min-h-9 min-w-0 flex-1 py-1.5 text-[13px] sm:w-36 sm:flex-none" @change="filtro.dias = 0">
         </div>
     </header>
 
@@ -256,7 +256,7 @@ onMounted(() => {
 
             <!-- Cartera -->
             <section class="tarjeta">
-                <header class="flex items-baseline gap-3 px-5 pb-3 pt-4">
+                <header class="flex flex-wrap items-baseline gap-x-3 gap-y-2 px-5 pb-3 pt-4">
                     <div>
                         <h2 class="text-[15px] font-medium">Cartera</h2>
                         <p class="mt-0.5 text-[11.5px] text-[var(--color-tenue)]">
@@ -312,7 +312,7 @@ onMounted(() => {
 
             <!-- Control -->
             <section class="tarjeta">
-                <header class="flex items-baseline gap-3 px-5 pb-3 pt-4">
+                <header class="flex flex-wrap items-baseline gap-x-3 gap-y-2 px-5 pb-3 pt-4">
                     <div>
                         <h2 class="text-[15px] font-medium">Control y desviaciones</h2>
                         <p class="mt-0.5 text-[11.5px] text-[var(--color-tenue)]">

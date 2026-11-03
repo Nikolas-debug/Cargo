@@ -10,6 +10,6 @@ enum TipoLiquidacion: string
     /** Cuenta de pago a un dueño o conductor. */
     case Pago = 'pago';
 
-    /** Lo pagado a una cantera por el material. Se paga al cargar: saldo cero. */
+    /** El crédito con una cantera por el material: se le abona hasta saldar. */
     case Material = 'material';
 }

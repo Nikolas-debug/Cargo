@@ -10,7 +10,7 @@ defineProps({
 </script>
 
 <template>
-    <div class="flex items-center gap-3.5">
+    <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1">
         <span v-for="serie in series" :key="serie.nombre" class="flex items-center gap-1.5 text-[11.5px] text-[var(--color-apagado)]">
             <span class="size-2.5 rounded-full" :style="{ background: serie.color }"></span>
             {{ serie.nombre }}

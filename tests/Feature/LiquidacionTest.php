@@ -140,7 +140,7 @@ it('numera las cuentas por destinatario', function () {
     expect($segunda->numero_cuenta)->toBe(2);
 });
 
-it('arma la cuenta de material de la cantera, ya pagada', function () {
+it('arma la cuenta de material de la cantera, a crédito', function () {
     confirmarTodos($this->escenario, $this->viajes);
 
     $liquidacion = app(GenerarLiquidacion::class)(
@@ -152,17 +152,14 @@ it('arma la cuenta de material de la cantera, ya pagada', function () {
         canteraId: $this->escenario['cantera']->id,
     );
 
-    // 3 viajes x 14 m³ x 10.000: se pagó al cargar, no queda saldo.
+    // 3 viajes x 14 m³ x 10.000: se le debe a la cantera hasta que se le abone.
     expect($liquidacion->viajes)->toHaveCount(3)
         ->and($liquidacion->total_bruto)->toBe(420_000)
-        ->and($liquidacion->saldo)->toBe(0)
+        ->and($liquidacion->saldo)->toBe(420_000)
         ->and($this->viajes->first()->fresh()->liquidacion_material_id)->toBe($liquidacion->id);
 
-    expect(fn () => app(RegistrarAnticipo::class)(
-        $liquidacion,
-        ['fecha' => '2026-08-13', 'valor' => 100_000],
-        $this->escenario['usuario'],
-    ))->toThrow(Illuminate\Validation\ValidationException::class);
+    app(RegistrarAnticipo::class)($liquidacion, ['fecha' => '2026-08-30', 'valor' => 100_000], $this->escenario['admin']);
+    expect($liquidacion->fresh()->saldo)->toBe(320_000);
 
     // La cuenta de cobro de esos viajes sigue libre, y lleva el material:
     // 3 x 14 m³ x (25.000 de flete + 10.000 de material).

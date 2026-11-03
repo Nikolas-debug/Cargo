@@ -181,10 +181,10 @@ onMounted(async () => {
     </header>
 
     <!-- Pasos -->
-    <div class="flex items-center gap-1 border-b border-[var(--color-borde)] bg-white px-7 pb-3">
+    <div class="flex items-center gap-1 overflow-x-auto border-b border-[var(--color-borde)] bg-white px-4 pb-3 sm:px-7">
         <template v-for="(p, i) in PASOS" :key="p.numero">
             <button
-                class="flex items-center gap-2 rounded-md px-3 py-1.5 text-[13px] transition"
+                class="flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-[13px] transition"
                 :class="paso === p.numero ? 'bg-[var(--color-info-fondo)] font-medium text-[var(--color-info)]' : 'text-[var(--color-apagado)]'"
                 @click="paso = p.numero"
             >
@@ -208,7 +208,7 @@ onMounted(async () => {
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5">
-                <div class="col-span-2">
+                <div class="sm:col-span-2">
                     <label class="etiqueta">Razón social <span class="text-[var(--color-critico)]">*</span></label>
                     <input v-model="consorcio.razon_social" class="campo" placeholder="Consorcio …">
                 </div>

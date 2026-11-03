@@ -17,6 +17,7 @@ class LiquidacionResource extends JsonResource
             'id' => $this->id,
             'tipo' => $this->tipo,
             'numero_cuenta' => $this->numero_cuenta,
+            'consorcio_id' => $this->consorcio_id,
             'destinatario' => match ($this->tipo) {
                 TipoLiquidacion::Cobro => $this->whenLoaded('consorcio', fn () => $this->consorcio?->razon_social),
                 TipoLiquidacion::Pago => $this->whenLoaded('tercero', fn () => $this->tercero?->nombre_completo),
@@ -39,7 +40,9 @@ class LiquidacionResource extends JsonResource
                 'id' => $a->id,
                 'fecha' => $a->fecha?->toDateString(),
                 'valor' => $a->valor,
+                'numero_comprobante' => $a->numero_comprobante,
                 'observacion' => $a->observacion,
+                'tiene_comprobante' => (bool) $a->comprobante_exists,
             ])),
             'cerrada_en' => $this->cerrada_en?->toIso8601String(),
         ];

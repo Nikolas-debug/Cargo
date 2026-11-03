@@ -61,6 +61,7 @@ class ViajeController extends Controller
             'conductor_id' => ['nullable', 'exists:terceros,id'],
             'fecha_viaje' => ['sometimes', 'date', 'before_or_equal:today'],
             'm3_registrado' => ['sometimes', 'integer', 'min:1', 'max:60'],
+            'material_por_conductor' => [$viaje->esSuministro() ? 'sometimes' : 'prohibited', 'boolean'],
             'observaciones' => ['nullable', 'string', 'max:500'],
         ]);
 

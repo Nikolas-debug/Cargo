@@ -90,4 +90,13 @@ abstract class CatalogoController extends Controller
 
         return response()->json(['message' => 'Registro desactivado.']);
     }
+
+    /** Deshace un "Desactivar" dado por error. */
+    public function reactivar(int $id): JsonResource
+    {
+        $registro = $this->modelo::findOrFail($id);
+        $registro->update([$this->columnaEstado => $this->valorActivo]);
+
+        return new JsonResource($registro->load($this->relaciones));
+    }
 }

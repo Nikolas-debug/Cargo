@@ -23,6 +23,8 @@ const modulos = computed(() => [
     { nombre: 'Viajes', icono: 'viajes', ruta: { name: 'viajes' }, contador: true },
     { nombre: 'Vales', icono: 'vales', ruta: { name: 'vales' } },
     { nombre: 'Liquidaciones', icono: 'liquidaciones', ruta: { name: 'liquidaciones' } },
+    { nombre: 'Pagos', icono: 'pagos', ruta: { name: 'pagos' } },
+    { nombre: 'Material', icono: 'canteras', ruta: { name: 'material' } },
     { nombre: 'Tarifas', icono: 'tarifas', ruta: { name: 'tarifas' } },
 ])
 

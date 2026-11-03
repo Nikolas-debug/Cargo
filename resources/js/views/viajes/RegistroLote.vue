@@ -30,7 +30,7 @@ const buscandoTarifa = ref(false)
 const errorTarifa = ref('')
 
 function nuevaFila() {
-    return { volqueta_id: '', m3: '', cantidad: 1, conductor_id: '' }
+    return { volqueta_id: '', m3: '', cantidad: 1, conductor_id: '', material_por_conductor: false }
 }
 
 /** Una fila puede valer varios viajes: la misma placa con los mismos m³. */
@@ -146,6 +146,7 @@ async function guardar() {
                 m3: Number(f.m3),
                 cantidad: cantidadDe(f),
                 conductor_id: f.conductor_id || null,
+                material_por_conductor: !esRetiro.value && f.material_por_conductor,
             })),
         })
 
@@ -314,6 +315,7 @@ onMounted(async () => {
                         <th class="px-2.5 py-2">DUEÑO</th>
                         <th class="w-28 px-2.5 py-2">M³ POR VIAJE</th>
                         <th class="w-24 px-2.5 py-2">VIAJES</th>
+                        <th v-if="!esRetiro" class="w-32 px-2.5 py-2" title="El conductor consiguió o compró el material: se le debe a él, no a la cantera">MATERIAL LO PUSO</th>
                         <th class="w-11 py-2 pl-2.5 pr-5"></th>
                     </tr>
                 </thead>
@@ -355,6 +357,12 @@ onMounted(async () => {
                                 @keyup.enter="alPresionarEnter(i)"
                             >
                         </td>
+                        <td v-if="!esRetiro" class="px-2.5 py-2">
+                            <label class="flex items-center gap-2 text-[12.5px] text-[var(--color-apagado)]">
+                                <input v-model="fila.material_por_conductor" type="checkbox" class="size-4">
+                                El conductor
+                            </label>
+                        </td>
                         <td class="py-2 pl-2.5 pr-5">
                             <button class="text-[var(--color-tenue)] hover:text-[var(--color-critico)]" @click="quitarFila(i)"><Icono nombre="x" :tamano="16" /></button>
                         </td>
@@ -367,7 +375,7 @@ onMounted(async () => {
                 <button class="text-[12.5px] font-medium text-[var(--color-enlace)]" @click="agregarFila">+ Agregar fila</button>
             </div>
 
-            <div class="flex items-center gap-7 border-t border-[var(--color-borde)] bg-[var(--color-superficie-sutil)] px-5 py-3.5">
+            <div class="flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-[var(--color-borde)] bg-[var(--color-superficie-sutil)] px-5 py-3.5">
                 <p class="text-[12.5px] text-[var(--color-apagado)]">
                     Viajes <span class="cifra ml-1 text-[15px] font-medium text-[var(--color-tinta)]">{{ totalViajes }}</span>
                 </p>

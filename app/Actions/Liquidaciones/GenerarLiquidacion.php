@@ -16,6 +16,9 @@ use Illuminate\Validation\ValidationException;
  * cobra lo que tiene vale.
  *
  * La cuenta nace abierta; se pueden agregar anticipos hasta cerrarla.
+ *
+ * El número lo puede poner quien la genera: las cuentas de antes del sistema
+ * se llevaban en Excel, y la que sigue no es la 1 sino la 14.
  */
 class GenerarLiquidacion
 {
@@ -26,8 +29,9 @@ class GenerarLiquidacion
         string $desde,
         string $hasta,
         ?int $canteraId = null,
+        ?int $numeroCuenta = null,
     ): Liquidacion {
-        return DB::transaction(function () use ($tipo, $consorcioId, $terceroId, $canteraId, $desde, $hasta) {
+        return DB::transaction(function () use ($tipo, $consorcioId, $terceroId, $canteraId, $desde, $hasta, $numeroCuenta) {
             $viajes = $this->viajesElegibles($tipo, $consorcioId, $terceroId, $canteraId, $desde, $hasta)->get();
 
             if ($viajes->isEmpty()) {
@@ -38,7 +42,7 @@ class GenerarLiquidacion
 
             $liquidacion = Liquidacion::create([
                 'tipo' => $tipo,
-                'numero_cuenta' => Liquidacion::siguienteNumero($tipo, $consorcioId, $terceroId, $canteraId),
+                'numero_cuenta' => $numeroCuenta ?? Liquidacion::siguienteNumero($tipo, $consorcioId, $terceroId, $canteraId),
                 'consorcio_id' => $consorcioId,
                 'tercero_id' => $terceroId,
                 'cantera_id' => $canteraId,
@@ -76,6 +80,7 @@ class GenerarLiquidacion
         if ($tipo === TipoLiquidacion::Material) {
             return $query
                 ->sinLiquidarMaterial()
+                ->materialDeCantera()
                 ->whereHas('canteraMaterial', fn (Builder $q) => $q->where('cantera_id', $canteraId));
         }
 

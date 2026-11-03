@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\TipoLiquidacion;
+use App\Models\Liquidacion;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,6 +27,11 @@ class GenerarLiquidacionRequest extends FormRequest
             'cantera_id' => [Rule::requiredIf($esMaterial), Rule::prohibitedIf(! $esMaterial), 'nullable', 'exists:canteras,id'],
             'desde' => ['required', 'date'],
             'hasta' => ['required', 'date', 'after_or_equal:desde'],
+            // Vacío = el siguiente. Lo escribe quien trae la numeración del Excel.
+            'numero_cuenta' => [
+                'nullable', 'integer', 'min:1', 'max:99999',
+                Liquidacion::numeroLibre($this->input('tipo'), $this->input('consorcio_id'), $this->input('tercero_id'), $this->input('cantera_id')),
+            ],
         ];
     }
 }

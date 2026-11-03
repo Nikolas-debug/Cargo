@@ -16,7 +16,7 @@ const mostrandoTabla = ref(false)
 
 <template>
     <section class="tarjeta flex flex-col">
-        <header class="flex items-baseline gap-3 px-5 pb-3 pt-4">
+        <header class="flex flex-wrap items-baseline gap-x-3 gap-y-2 px-5 pb-3 pt-4">
             <div>
                 <h2 class="text-[13px] font-medium">{{ titulo }}</h2>
                 <p v-if="subtitulo" class="mt-0.5 text-[11.5px] text-[var(--color-tenue)]">{{ subtitulo }}</p>
@@ -27,7 +27,7 @@ const mostrandoTabla = ref(false)
 
                 <button
                     v-if="conTabla"
-                    class="text-[11.5px] font-medium text-[var(--color-enlace)]"
+                    class="shrink-0 whitespace-nowrap text-[11.5px] font-medium text-[var(--color-enlace)]"
                     @click="mostrandoTabla = !mostrandoTabla"
                 >
                     {{ mostrandoTabla ? 'Ver gráfico' : 'Ver tabla' }}

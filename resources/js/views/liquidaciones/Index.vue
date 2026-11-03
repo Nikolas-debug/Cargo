@@ -29,6 +29,7 @@ const nueva = reactive({
     cantera_id: '',
     desde: '',
     hasta: hoy(),
+    numero_cuenta: '',
     guardando: false,
 })
 
@@ -57,6 +58,7 @@ async function generar() {
             cantera_id: nueva.tipo === 'material' ? nueva.cantera_id : null,
             desde: nueva.desde,
             hasta: nueva.hasta,
+            numero_cuenta: nueva.numero_cuenta ? Number(nueva.numero_cuenta) : null,
         })
 
         avisos.ok(`Cuenta #${data.data?.numero_cuenta ?? ''} generada.`)
@@ -222,7 +224,8 @@ onMounted(async () => {
                         <option v-for="c in canteras" :key="c.id" :value="c.id">{{ c.nombre }}</option>
                     </select>
                     <p class="mt-1 text-[11.5px] text-[var(--color-tenue)]">
-                        Lo que se le pagó en la cantera al cargar. Ya está pago: la cuenta queda en saldo cero.
+                        Lo que se le debe a la cantera por el material con vale. Se le abona desde la cuenta hasta saldarla.
+                        No entran los viajes donde el material lo puso el conductor: esos van en su cuenta de pago.
                     </p>
                 </div>
 
@@ -245,7 +248,13 @@ onMounted(async () => {
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 text-[12.5px]">
+                <div>
+                    <label class="etiqueta">Número de la cuenta</label>
+                    <input v-model="nueva.numero_cuenta" type="number" min="1" inputmode="numeric" class="campo cifra" placeholder="Automático (el siguiente)">
+                    <p class="mt-1 text-[11.5px] text-[var(--color-tenue)]">Si la numeración viene del Excel, escribe el que sigue (por ejemplo 14).</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 text-[12.5px]">
                     <span class="text-[var(--color-apagado)]">Periodo:</span>
                     <button class="boton-secundario py-1" @click="periodo('semana')">Semana</button>
                     <button class="boton-secundario py-1" @click="periodo('quincena')">Quincena</button>

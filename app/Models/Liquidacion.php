@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 
 /**
  * Las "CUENTAS" del Excel: total bruto - anticipos = saldo.
@@ -122,16 +124,16 @@ class Liquidacion extends Model
     {
         $bruto = $this->viajes->sum(fn (Viaje $viaje) => match ($this->tipo) {
             TipoLiquidacion::Cobro => $viaje->totalCobro(),
-            TipoLiquidacion::Pago => $viaje->totalPagoPropietario() + $viaje->totalPagoConductor(),
-            TipoLiquidacion::Material => $viaje->totalMaterial(),
+            // Si el conductor puso el material, se le devuelve aquí.
+            TipoLiquidacion::Pago => $viaje->totalPagoPropietario() + $viaje->totalPagoConductor() + $viaje->totalReembolsoMaterial(),
+            TipoLiquidacion::Material => $viaje->totalMaterialCantera(),
         });
 
         $anticipos = (int) $this->anticipos()->sum('valor');
 
         $this->total_bruto = (int) $bruto;
         $this->total_anticipos = $anticipos;
-        // El material se paga en la cantera al cargar: no queda nada debiendo.
-        $this->saldo = $this->esMaterial() ? 0 : (int) $bruto - $anticipos;
+        $this->saldo = (int) $bruto - $anticipos;
 
         return $this;
     }
@@ -139,6 +141,17 @@ class Liquidacion extends Model
     public function scopeAbiertas(Builder $query): Builder
     {
         return $query->where('estado', EstadoLiquidacion::Abierta);
+    }
+
+    /** Regla de validación: ese número no lo tiene ya otra cuenta del mismo tipo y destinatario. */
+    public static function numeroLibre(?string $tipo, ?int $consorcioId, ?int $terceroId, ?int $canteraId, ?int $ignorar = null): Unique
+    {
+        return Rule::unique('liquidaciones', 'numero_cuenta')
+            ->where('tipo', $tipo)
+            ->where('consorcio_id', $consorcioId)
+            ->where('tercero_id', $terceroId)
+            ->where('cantera_id', $canteraId)
+            ->ignore($ignorar);
     }
 
     /** El siguiente número de cuenta para este destinatario. */

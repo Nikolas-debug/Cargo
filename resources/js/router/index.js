@@ -25,6 +25,8 @@ const rutas = [
 
             { path: 'liquidaciones', name: 'liquidaciones', component: () => import('../views/liquidaciones/Index.vue') },
             { path: 'liquidaciones/:id', name: 'liquidaciones.detalle', component: () => import('../views/liquidaciones/Detalle.vue'), props: true },
+            { path: 'pagos', name: 'pagos', component: () => import('../views/pagos/Index.vue') },
+            { path: 'material', name: 'material', component: () => import('../views/material/Relacion.vue') },
 
             // Los ocho catálogos son la misma pantalla con distinta
             // configuración: una sola vista los sirve a todos.

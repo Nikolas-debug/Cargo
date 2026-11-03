@@ -46,6 +46,7 @@ class RegistrarViajesRequest extends FormRequest
             // m³ de CADA viaje: la fila se multiplica en esa cantidad de viajes.
             'viajes.*.cantidad' => ['nullable', 'integer', 'min:1', 'max:30'],
             'viajes.*.conductor_id' => ['nullable', 'exists:terceros,id'],
+            'viajes.*.material_por_conductor' => ['nullable', 'boolean'],
             'viajes.*.observaciones' => ['nullable', 'string', 'max:500'],
         ];
     }

@@ -22,6 +22,8 @@ class ViajeResource extends JsonResource
 
             'ruta' => $this->ruta(),
             'material' => $this->whenLoaded('canteraMaterial', fn () => $this->canteraMaterial?->material?->nombre),
+            'cantera' => $this->whenLoaded('canteraMaterial', fn () => $this->canteraMaterial?->cantera?->nombre),
+            'botadero' => $this->whenLoaded('botadero', fn () => $this->botadero?->nombre),
 
             'm3_registrado' => $this->m3_registrado,
             'm3_confirmado' => $this->m3_confirmado,
@@ -35,10 +37,12 @@ class ViajeResource extends JsonResource
             'total_flete' => $this->totalFlete(),
             'total_material' => $this->totalMaterial(),
             'total_cobro' => $this->totalCobro(),
+            'material_por_conductor' => (bool) $this->material_por_conductor,
+            'total_reembolso_material' => $this->totalReembolsoMaterial(),
 
             'valor_pago_unitario' => $this->valor_pago_unitario,
             'unidad_pago' => $this->unidad_pago,
-            'total_pago' => $this->totalPagoPropietario() + $this->totalPagoConductor(),
+            'total_pago' => $this->totalPagoPropietario() + $this->totalPagoConductor() + $this->totalReembolsoMaterial(),
 
             'pago_conductor' => $this->when($this->valor_pago_conductor !== null, fn () => [
                 'base' => $this->valor_base_conductor,

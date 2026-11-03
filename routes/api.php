@@ -9,12 +9,16 @@ use App\Http\Controllers\Api\ConsorcioController;
 use App\Http\Controllers\Api\LiquidacionController;
 use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Api\ObraController;
+use App\Http\Controllers\Api\PagoConsorcioController;
 use App\Http\Controllers\Api\PanelController;
 use App\Http\Controllers\Api\TarifaController;
 use App\Http\Controllers\Api\TerceroController;
 use App\Http\Controllers\Api\ValeController;
 use App\Http\Controllers\Api\ViajeController;
 use App\Http\Controllers\Api\VolquetaController;
+use App\Models\Cantera;
+use App\Reportes\RelacionMaterial;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Abierta a internet: seis intentos por minuto frenan a quien adivine claves.
@@ -35,6 +39,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('materiales', MaterialController::class);
     Route::apiResource('cantera-material', CanteraMaterialController::class);
 
+    // Desactivar es un DELETE suave; esto lo deshace.
+    foreach ([
+        'terceros' => TerceroController::class,
+        'volquetas' => VolquetaController::class,
+        'consorcios' => ConsorcioController::class,
+        'canteras' => CanteraController::class,
+        'botaderos' => BotaderoController::class,
+        'materiales' => MaterialController::class,
+    ] as $catalogo => $controlador) {
+        Route::post("{$catalogo}/{id}/reactivar", [$controlador, 'reactivar']);
+    }
+
     // --- Tarifas -----------------------------------------------------
     // OJO: 'resolver' va ANTES del apiResource. Si no, Laravel la toma como
     // tarifas/{tarifa} con el id "resolver" y nunca llega aquí.
@@ -54,9 +70,31 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Liquidaciones y anticipos -----------------------------------
     Route::post('liquidaciones/{liquidacion}/cerrar', [LiquidacionController::class, 'cerrar']);
+    Route::patch('liquidaciones/{liquidacion}/numero', [LiquidacionController::class, 'renumerar']);
     Route::post('liquidaciones/{liquidacion}/anticipos', [LiquidacionController::class, 'agregarAnticipo']);
     Route::delete('anticipos/{anticipo}', [LiquidacionController::class, 'eliminarAnticipo']);
-    Route::apiResource('liquidaciones', LiquidacionController::class)->only(['index', 'store', 'show']);
+    // Laravel singulariza "liquidaciones" como "liquidacione": sin esto, el
+    // detalle recibe una cuenta vacía en vez de la del id.
+    Route::apiResource('liquidaciones', LiquidacionController::class)
+        ->only(['index', 'store', 'show'])
+        ->parameters(['liquidaciones' => 'liquidacion']);
+
+    // --- Pagos del consorcio y comprobantes ------------------------------
+    Route::get('pagos', [PagoConsorcioController::class, 'index']);
+    Route::post('pagos', [PagoConsorcioController::class, 'store'])->name('pagos.store');
+    Route::put('anticipos/{anticipo}/cuenta', [PagoConsorcioController::class, 'aplicar']);
+    Route::get('anticipos/{anticipo}/comprobante', [PagoConsorcioController::class, 'comprobante']);
+
+    // --- Crédito con la cantera, día por día y por obra -------------------
+    Route::get('reportes/material', function (Request $request, RelacionMaterial $relacion) {
+        $datos = $request->validate([
+            'cantera_id' => ['required', 'exists:canteras,id'],
+            'desde' => ['required', 'date'],
+            'hasta' => ['required', 'date', 'after_or_equal:desde'],
+        ]);
+
+        return response()->json($relacion(Cantera::findOrFail($datos['cantera_id']), $datos['desde'], $datos['hasta']));
+    });
 
     // --- Solo administrador -------------------------------------------
     Route::middleware('admin')->group(function () {

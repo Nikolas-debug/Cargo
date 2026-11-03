@@ -30,7 +30,7 @@ class RegistrarViajes
 
     /**
      * @param  array{obra_id:int, tipo_viaje:string, fecha_viaje:string, cantera_material_id?:int|null, botadero_id?:int|null}  $cabecera
-     * @param  array<int, array{volqueta_id:int, m3:int, cantidad?:int, conductor_id?:int|null, observaciones?:string|null}>  $filas
+     * @param  array<int, array{volqueta_id:int, m3:int, cantidad?:int, conductor_id?:int|null, material_por_conductor?:bool, observaciones?:string|null}>  $filas
      * @return Collection<int, Viaje>
      */
     public function __invoke(array $cabecera, array $filas, User $usuario): Collection
@@ -74,6 +74,8 @@ class RegistrarViajes
                     'valor_cobro_unitario' => $tarifaCobro->valor,
                     'unidad_cobro' => $tarifaCobro->unidad,
                     'valor_material_m3' => $valorMaterial,
+                    // El conductor consiguió el material: se le debe a él, no a la cantera.
+                    'material_por_conductor' => $tipoViaje === TipoViaje::Suministro && ! empty($fila['material_por_conductor']),
                     'registrado_por' => $usuario->id,
                     'observaciones' => $fila['observaciones'] ?? null,
                 ];

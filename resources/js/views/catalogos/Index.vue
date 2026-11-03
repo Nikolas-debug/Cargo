@@ -3,7 +3,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import api, { mensajeDeError } from '../../lib/api'
 import { numero } from '../../lib/formato'
 import { useAvisos } from '../../stores/avisos'
-import { CATALOGOS, leer } from './definiciones'
+import { CATALOGOS, estaInactivo, leer } from './definiciones'
 import Encabezado from '../../components/Encabezado.vue'
 import Cargando from '../../components/Cargando.vue'
 import Paginacion from '../../components/Paginacion.vue'
@@ -89,9 +89,22 @@ async function guardar() {
 }
 
 async function desactivar(registro) {
+    const nombre = valorCelda(registro, config.value.columnas[0])
+    if (!confirm(`¿Desactivar ${config.value.singular} "${nombre}"? Dejará de salir en los formularios.`)) return
+
     try {
         await api.delete(`${config.value.endpoint}/${registro.id}`)
         avisos.ok('Registro desactivado. No se borra, para no dejar viajes huérfanos.')
+        await cargar(meta.value?.current_page ?? 1)
+    } catch (e) {
+        avisos.error(mensajeDeError(e))
+    }
+}
+
+async function reactivar(registro) {
+    try {
+        await api.post(`${config.value.endpoint}/${registro.id}/reactivar`)
+        avisos.ok('Registro reactivado. Ya vuelve a salir en los formularios.')
         await cargar(meta.value?.current_page ?? 1)
     } catch (e) {
         avisos.error(mensajeDeError(e))
@@ -154,24 +167,42 @@ watch(busqueda, () => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="registro in registros" :key="registro.id" class="border-b border-[var(--color-borde)] hover:bg-[var(--color-superficie-sutil)]">
+                            <tr
+                                v-for="registro in registros"
+                                :key="registro.id"
+                                class="border-b border-[var(--color-borde)] hover:bg-[var(--color-superficie-sutil)]"
+                                :class="estaInactivo(config, registro) ? 'text-[var(--color-tenue)]' : ''"
+                            >
                                 <td
                                     v-for="(columna, i) in config.columnas"
                                     :key="columna.clave"
                                     class="px-2.5 py-2.5"
-                                    :class="[columna.cifra ? 'cifra' : '', columna.derecha ? 'text-right' : '', i === 0 ? 'pl-4 sm:pl-8 font-medium' : 'text-[var(--color-cuerpo)]']"
+                                    :class="[columna.cifra ? 'cifra' : '', columna.derecha ? 'text-right' : '', i === 0 ? 'pl-4 sm:pl-8 font-medium' : estaInactivo(config, registro) ? '' : 'text-[var(--color-cuerpo)]']"
                                 >
                                     {{ valorCelda(registro, columna) }}
+                                    <span
+                                        v-if="i === 0 && estaInactivo(config, registro)"
+                                        class="ml-1.5 rounded bg-[var(--color-neutro-fondo)] px-1.5 py-0.5 text-[10.5px] font-medium text-[var(--color-apagado)]"
+                                    >Inactivo</span>
                                 </td>
-                                <td class="py-2.5 pl-2.5 pr-4 sm:pr-8 text-right">
+                                <td class="whitespace-nowrap py-2.5 pl-2.5 pr-4 sm:pr-8 text-right">
                                     <button class="text-[12.5px] font-medium text-[var(--color-enlace)]" @click="abrir(registro)">Editar</button>
-                                    <button
-                                        v-if="!config.sinBorrar"
-                                        class="ml-3 text-[12.5px] text-[var(--color-tenue)] hover:text-[var(--color-critico)]"
-                                        @click="desactivar(registro)"
-                                    >
-                                        Desactivar
-                                    </button>
+                                    <template v-if="!config.sinBorrar">
+                                        <button
+                                            v-if="estaInactivo(config, registro)"
+                                            class="ml-3 text-[12.5px] font-medium text-[var(--color-confirmado)]"
+                                            @click="reactivar(registro)"
+                                        >
+                                            Reactivar
+                                        </button>
+                                        <button
+                                            v-else
+                                            class="ml-3 text-[12.5px] text-[var(--color-tenue)] hover:text-[var(--color-critico)]"
+                                            @click="desactivar(registro)"
+                                        >
+                                            Desactivar
+                                        </button>
+                                    </template>
                                 </td>
                             </tr>
                         </tbody>

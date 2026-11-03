@@ -5,6 +5,7 @@
  *
  * tipo: texto | numero | booleano | select
  * fuente: para los select, el endpoint de donde salen las opciones
+ * inactivo: [columna, valor] que deja "Desactivar" (por defecto activo = false)
  */
 export const CATALOGOS = {
     terceros: {
@@ -31,6 +32,7 @@ export const CATALOGOS = {
         singular: 'volqueta',
         endpoint: 'volquetas',
         descripcion: 'A quien se le liquidan los viajes es al dueño de la volqueta.',
+        inactivo: ['estado', 'inactiva'],
         columnas: [
             { clave: 'placa', texto: 'PLACA', cifra: true, ancho: 'w-28' },
             { clave: 'propietario.nombre_completo', texto: 'DUEÑO' },
@@ -101,6 +103,7 @@ export const CATALOGOS = {
         singular: 'consorcio',
         endpoint: 'consorcios',
         descripcion: 'Quien contrata a Grup Tous. Cada consorcio tiene sus obras.',
+        inactivo: ['estado_contrato', 'terminado'],
         columnas: [
             { clave: 'razon_social', texto: 'RAZÓN SOCIAL' },
             { clave: 'nit', texto: 'NIT', cifra: true, ancho: 'w-40' },
@@ -142,6 +145,12 @@ export const CATALOGOS = {
             ] },
         ],
     },
+}
+
+/** Si el registro quedó desactivado (se sigue listando, pero no sale en los select). */
+export function estaInactivo(config, registro) {
+    const [columna, valor] = config.inactivo ?? ['activo', false]
+    return registro[columna] === valor
 }
 
 /** Lee "propietario.nombre_completo" de un objeto anidado. */

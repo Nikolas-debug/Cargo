@@ -26,7 +26,7 @@ class Viaje extends Model
         'volqueta_id', 'conductor_id', 'tipo_viaje', 'obra_id',
         'cantera_material_id', 'botadero_id', 'fecha_viaje',
         'm3_registrado', 'm3_confirmado',
-        'valor_cobro_unitario', 'unidad_cobro', 'valor_material_m3',
+        'valor_cobro_unitario', 'unidad_cobro', 'valor_material_m3', 'material_por_conductor',
         'valor_pago_unitario', 'unidad_pago',
         'valor_base_conductor', 'porcentaje_conductor', 'valor_pago_conductor',
         'estado', 'vale_id', 'fecha_confirmacion',
@@ -47,6 +47,7 @@ class Viaje extends Model
             'm3_confirmado' => 'integer',
             'valor_cobro_unitario' => 'integer',
             'valor_material_m3' => 'integer',
+            'material_por_conductor' => 'boolean',
             'valor_pago_unitario' => 'integer',
             'valor_base_conductor' => 'integer',
             'valor_pago_conductor' => 'integer',
@@ -178,6 +179,18 @@ class Viaje extends Model
         return (int) ($this->valor_material_m3 ?? 0) * $this->m3Efectivos();
     }
 
+    /** Lo que se le debe a la cantera: nada si el material lo puso el conductor. */
+    public function totalMaterialCantera(): int
+    {
+        return $this->material_por_conductor ? 0 : $this->totalMaterial();
+    }
+
+    /** El material que el conductor consiguió o compró: se le devuelve en su cuenta de pago. */
+    public function totalReembolsoMaterial(): int
+    {
+        return $this->material_por_conductor ? $this->totalMaterial() : 0;
+    }
+
     /** Lo que se le paga al dueño de la volqueta. Cero si la volqueta es propia. */
     public function totalPagoPropietario(): int
     {
@@ -232,6 +245,12 @@ class Viaje extends Model
     public function scopeSinLiquidarMaterial(Builder $query): Builder
     {
         return $query->whereNull('liquidacion_material_id');
+    }
+
+    /** Los que se le deben a la cantera: el material no lo puso el conductor. */
+    public function scopeMaterialDeCantera(Builder $query): Builder
+    {
+        return $query->where('material_por_conductor', false);
     }
 
     public function scopeEntreFechas(Builder $query, string $desde, string $hasta): Builder
